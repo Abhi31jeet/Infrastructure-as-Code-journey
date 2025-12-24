@@ -3,7 +3,7 @@ resource "aws_s3_bucket" "portfolio_bucket" {
 
   tags = {
     Name        = "My Portfolio Bucket"
-    Project     = var.Infrastructure-as-Code-journey
+    Project     = var.project_name  # Reference the NAME of the variable, not the value
     Environment = "Dev"
   }
 }
