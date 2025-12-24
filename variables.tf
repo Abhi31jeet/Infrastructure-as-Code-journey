@@ -1,16 +1,14 @@
-variable "aws_region" {
-  description = "The AWS region to deploy in"
-  type        = string
-  default     = "us-east-1"
-}
-
 variable "bucket_name" {
-  description = "Terraform_S3_AbhijeetG"
   type        = string
+  description = "The name of the S3 bucket"
 }
 
 variable "project_name" {
-  description = "_AC_Terraform"
   type        = string
-  default     = "Infrastructure-as-Code-journey"
+  default     = "Infrastructure-as-Code-journey" # This is the VALUE
+}
+
+variable "aws_region" {
+  type    = string
+  default = "us-east-1"
 }
