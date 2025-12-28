@@ -45,27 +45,27 @@ On Day 3, I shifted from static configurations to **Dynamic Infrastructure**. Th
 - **Outputs:** Defined explicit `output` values to surface critical resource information (like S3 Website Endpoints) directly to the CLI, facilitating automation and visibility.
 - **Implicit Dependencies:** Leveraged Terraform's dependency graph to ensure resources (like Bucket Website Configurations) are created in the correct logical order.
 
-#### Day 4: State Management & Safety
+### Day 4: State Management & Safety
 - **Remote Backend:** Successfully migrated local state to AWS S3 for durability.
 - **State Locking:** Implemented native S3 lockfile support to prevent concurrent execution conflicts.
 - **Bootstrap Process:** Navigated the "Chicken-and-Egg" problem using a two-stage initialization.
 
 
-#### Day 5: Modularization & State Refactoring
+### Day 5: Modularization & State Refactoring
 - **Modules:** Refactored S3 Website logic into a reusable child module located in `./modules/s3-website`.
 - **State Management:** Mastered `terraform state list` and `terraform state mv` to ensure zero-downtime refactoring.
 - **Algorithms:** Implemented an iterative $O(n)$ time and $O(1)$ space solution for Reversing a Linked List.
 
-## Project 1: Multi-Environment Portfolio Engine
+### Project 1: Multi-Environment Portfolio Engine
 
-### Description
+#### Description
 A production-grade Terraform framework that deploys isolated static websites across multiple environments using a single codebase.
 
-### Technical Stack
+#### Technical Stack
 - **Terraform Workspaces:** Environment isolation for `dev` and `prod`.
 - **Remote State:** Managed via S3 with DynamoDB locking.
 - **Custom Modules:** Reusable S3 website component with automated policy injection.
 
-### Results
+#### Results
 - **Dev URL:** http://abhijeet-portfolio-dev-2025.s3-website-us-east-1.amazonaws.com
 - **Prod URL:** http://abhijeet-portfolio-prod-2025.s3-website-us-east-1.amazonaws.com
