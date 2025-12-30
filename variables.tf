@@ -1,14 +1,11 @@
-variable "bucket_name" {
+variable "region" {
+  description = "AWS Region"
   type        = string
-  description = "The name of the S3 bucket"
+  default     = "us-east-1"
 }
 
 variable "project_name" {
+  description = "Project name used for tagging"
   type        = string
-  default     = "Infrastructure-as-Code-journey" # This is the VALUE
-}
-
-variable "aws_region" {
-  type    = string
-  default = "us-east-1"
+  default     = "sre-journey"
 }

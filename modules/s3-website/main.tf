@@ -34,6 +34,6 @@ resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.this.id
   key          = "index.html"
   source       = "${path.root}/website/index.html"
-  content_type = "text/html" # This prevents the 'blank page' issue
+  content_type = "text/html"                                # This prevents the 'blank page' issue
   etag         = filemd5("${path.root}/website/index.html") # Forces upload on change
 }
