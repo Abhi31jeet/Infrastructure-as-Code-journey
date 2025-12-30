@@ -69,3 +69,40 @@ A production-grade Terraform framework that deploys isolated static websites acr
 #### Results
 - **Dev URL:** http://abhijeet-portfolio-dev-2025.s3-website-us-east-1.amazonaws.com
 - **Prod URL:** http://abhijeet-portfolio-prod-2025.s3-website-us-east-1.amazonaws.com
+
+
+# Infrastructure-as-Code Journey: Week 2 - Networking
+
+## 📌 Project Overview
+Building upon the state management foundations from Week 1, Week 2 focuses on creating the **Network Skeleton** of a cloud environment. This project implements a highly scalable, modular Virtual Private Cloud (VPC) on AWS using Terraform.
+
+
+
+## 🏗️ Architecture: The VPC Skeleton
+This module automates the deployment of a secure networking environment, featuring:
+- **Dynamic Subnetting:** Utilizes `for_each` loops to map subnets across multiple Availability Zones (AZs) for High Availability.
+- **Internet Connectivity:** Automated provisioning of an Internet Gateway (IGW) and Route Tables.
+- **CIDR Management:** Structured IP addressing using `/16` for the VPC and `/24` for subnets.
+
+## 🚀 Key SRE Concepts Implemented
+- **DRY (Don't Repeat Yourself):** Replaced hardcoded resource blocks with a single dynamic module.
+- **Scalability:** The infrastructure can scale from 1 to 50 subnets by simply updating a Map variable—no code changes required.
+- **Modular Inputs/Outputs:** Established a clear "contract" between the root configuration and the networking module using structured variables and outputs.
+
+## 🛠️ Infrastructure Breakdown
+| Resource | Purpose |
+| :--- | :--- |
+| `aws_vpc` | Isolated network container. |
+| `aws_internet_gateway` | The entry/exit point for public traffic. |
+| `aws_subnet` | Segmented IP ranges (multi-AZ). |
+| `aws_route_table` | The "GPS" directing traffic to the Internet Gateway. |
+
+## 💻 Deployment Commands
+1. **Initialize:** `terraform init`
+2. **Workspace Management:** `terraform workspace select dev`
+3. **Deploy:** `terraform apply -auto-approve`
+4. **Cleanup:** `terraform destroy -auto-approve`
+
+## 🧠 Lessons Learned
+- **Zombie Code Management:** Learned to identify and remove "leftover" variables and outputs from previous modules to prevent Terraform Plan errors.
+- **Variable Mapping:** Mastered the use of `map(object({}))` to pass complex data structures into modules.
