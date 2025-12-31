@@ -106,3 +106,12 @@ This module automates the deployment of a secure networking environment, featuri
 ## 🧠 Lessons Learned
 - **Zombie Code Management:** Learned to identify and remove "leftover" variables and outputs from previous modules to prevent Terraform Plan errors.
 - **Variable Mapping:** Mastered the use of `map(object({}))` to pass complex data structures into modules.
+
+
+## Phase 2: Modular Networking & Cost Optimization
+
+### Technical Highlights
+- **Modular Design:** Decoupled networking logic into a reusable child module.
+- **Network Isolation:** Built a multi-tier VPC with strictly private subnets for enhanced security.
+- **Cost Engineering:** Replaced the standard AWS NAT Gateway (~$32/mo) with a custom-configured **NAT Instance** using Amazon Linux 2023, keeping the project within the **AWS Free Tier**.
+- **IaC Best Practices:** Implemented automated formatting and rigorous `terraform validate` workflows to handle complex variable scoping.
