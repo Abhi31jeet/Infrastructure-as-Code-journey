@@ -4,6 +4,11 @@ resource "aws_vpc" "main" {
   tags                 = { Name = "${var.project_name}-vpc" }
 }
 
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
+  tags   = { Name = "${var.project_name}-igw" }
+}
+
 resource "aws_subnet" "public" {
   for_each                = var.public_subnets
   vpc_id                  = aws_vpc.main.id
@@ -21,8 +26,17 @@ resource "aws_subnet" "private" {
   tags              = { Name = "${var.project_name}-${each.key}" }
 }
 
-# Internet Gateway for Public Traffic
-resource "aws_internet_gateway" "main" {
+# Simple Route Table for Public Subnets
+resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
-  tags   = { Name = "${var.project_name}-igw" }
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  for_each       = aws_subnet.public
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public.id
 }

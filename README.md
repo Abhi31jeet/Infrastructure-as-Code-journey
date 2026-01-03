@@ -130,3 +130,39 @@ In this stage, I transitioned from a static network to an automated, self-healin
 - **Self-Healing:** Configured ASG health checks to automatically replace failed instances.
 - **Private Fleet Management:** Successfully routed traffic to instances with no public IPs using the ALB as a bridge.
 - **Infrastructure Testing:** Created a bash-based health check script to verify load balancer responsiveness.
+
+
+
+### 🚀 Infrastructure-as-Code Journey: Week 2 Capstone
+#### Project: The Resilient Web Cluster
+
+This project marks the completion of Phase 2 of my SRE roadmap. I have moved beyond basic instance deployment into building a **High-Availability (HA)**, self-healing architecture that follows industry best practices for security and scalability.
+
+
+
+#### 🏗️ Architecture Design
+The infrastructure is designed to survive the failure of an entire AWS Data Center (Availability Zone).
+
+* **VPC & Networking:** A custom VPC spanning two Availability Zones (AZs). It utilizes a 2-tier subnet strategy to isolate the application layer from the public internet.
+* **Application Load Balancer (ALB):** Serves as the single point of entry, distributing traffic across the fleet and performing health checks.
+* **Auto Scaling Group (ASG):** Maintains a "Desired Capacity" of 2 instances. If an instance fails a health check or is terminated, the ASG automatically provisions a replacement from a Launch Template.
+* **Security Chaining:** Web servers are located in **Private Subnets** with no public IP addresses. They only accept traffic on Port 80 if it originates from the ALB's Security Group.
+
+#### 🛠️ Tech Stack
+* **Cloud Provider:** AWS
+* **IaC Tool:** Terraform (Modularized)
+* **Web Server:** Apache (HTTPD) on Amazon Linux 2023
+* **Scripting:** Bash (for automated chaos testing)
+
+#### 🧠 SRE Skills Demonstrated
+- **Modular Terraform:** Using child modules to create reusable networking components.
+- **Fault Tolerance:** Designing for Multi-AZ resilience.
+- **Least Privilege Security:** Using Security Group references instead of wide-open CIDR blocks.
+- **Automated Recovery:** Leveraging ASG self-healing policies.
+
+#### 🚀 How to Deploy
+
+1. **Initialize & Apply:**
+   ```bash
+   terraform init
+   terraform apply -auto-approve
