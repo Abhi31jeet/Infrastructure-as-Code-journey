@@ -33,7 +33,9 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# Security Groups
+# --- Security Groups (Refactored for Chaining) ---
+
+# 1. ALB Security Group (Public facing)
 resource "aws_security_group" "alb_sg" {
   name   = "${var.project_name}-alb-sg"
   vpc_id = aws_vpc.main.id
@@ -53,22 +55,54 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
+# 2. EC2 Security Group (Private - No SSH Port 22!)
+resource "aws_security_group" "ec2_sg" {
+  name   = "${var.project_name}-ec2-sg"
+  vpc_id = aws_vpc.main.id
+
+  # Accept traffic ONLY from the ALB
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # IAM Security (Week 4 Focus)
 resource "aws_iam_role" "ec2_role" {
   name = "${var.project_name}-ec2-role"
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [{ Action = "sts:AssumeRole", Effect = "Allow", Principal = { Service = "ec2.amazonaws.com" } }]
   })
 }
 
+# Policy for Secrets Manager
 resource "aws_iam_role_policy" "secrets_policy" {
   name = "${var.project_name}-secrets-policy"
   role = aws_iam_role.ec2_role.id
   policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [{ Action = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"], Effect = "Allow", Resource = "*" }]
   })
+}
+
+data "aws_iam_policy" "ssm_core" {
+  arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Policy for SSM Session Manager (The Overachiever Add-on)
+resource "aws_iam_role_policy_attachment" "ssm_managed" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = data.aws_iam_policy.ssm_core.arn
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
@@ -76,7 +110,23 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = aws_iam_role.ec2_role.name
 }
 
-# Compute & Load Balancing
+# --- Secrets Manager ---
+
+resource "aws_secretsmanager_secret" "app_config" {
+  name                    = "${var.project_name}-app-config-final"
+  recovery_window_in_days = 0 
+}
+
+resource "aws_secretsmanager_secret_version" "app_config_val" {
+  secret_id     = aws_secretsmanager_secret.app_config.id
+  secret_string = jsonencode({
+    api_key     = "SUPER-SECRET-12345"
+    environment = "Production-SRE"
+  })
+}
+
+# --- Compute & Auto Scaling ---
+
 resource "aws_lb" "main" {
   name               = "${var.project_name}-alb"
   internal           = false
@@ -90,13 +140,10 @@ resource "aws_lb_target_group" "web_tg" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
-
   health_check {
     interval            = 15
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    path                = "/"
-    timeout             = 5
   }
 }
 
@@ -104,27 +151,10 @@ resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
-
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
   }
-}
-
-# .1. Create the Secret Metadata
-resource "aws_secretsmanager_secret" "app_config" {
-  name                    = "${var.project_name}-app-config-unique" # Added unique suffix
-  description             = "Application configuration for Week 4"
-  recovery_window_in_days = 0
-}
-
-# .2. Add a value to that Secret
-resource "aws_secretsmanager_secret_version" "app_config_val" {
-  secret_id = aws_secretsmanager_secret.app_config.id
-  secret_string = jsonencode({
-    api_key     = "SUPER-SECRET-12345"
-    environment = "Production-SRE"
-  })
 }
 
 resource "aws_launch_template" "web" {
@@ -132,7 +162,8 @@ resource "aws_launch_template" "web" {
   image_id      = var.ami_id
   instance_type = "t2.micro"
 
-  vpc_security_group_ids = [aws_security_group.alb_sg.id]
+  # Use the hardened EC2 SG (No Port 22)
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_profile.name
@@ -141,14 +172,21 @@ resource "aws_launch_template" "web" {
   user_data = base64encode(<<-EOF
               #!/bin/bash
               yum install -y httpd jq
+              
+              # Ensure SSM Agent is running (Overachiever task)
+              systemctl enable amazon-ssm-agent
+              systemctl start amazon-ssm-agent
+              
               systemctl start httpd
               
               # Fetch Secret
               SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id ${aws_secretsmanager_secret.app_config.name} --region ${var.region} --query SecretString --output text)
               API_KEY=$(echo $SECRET_JSON | jq -r .api_key)
-              
-              echo "<h1>Week 4: Security Hardened</h1>" > /var/www/html/index.html
-              echo "<p><b>API Key:</b> $API_KEY</p>" >> /var/www/html/index.html
+              ENV_NAME=$(echo $SECRET_JSON | jq -r .environment)
+
+              echo "<h1>Week 4: Zero-Ingress Hardened</h1>" > /var/www/html/index.html
+              echo "<p><b>Environment:</b> $ENV_NAME</p>" >> /var/www/html/index.html
+              echo "<p><b>Fetched API Key:</b> $API_KEY</p>" >> /var/www/html/index.html
               EOF
   )
 }
@@ -160,7 +198,6 @@ resource "aws_autoscaling_group" "web_asg" {
   min_size            = 2
   target_group_arns   = [aws_lb_target_group.web_tg.arn]
   vpc_zone_identifier = aws_subnet.public[*].id
-
   launch_template {
     id      = aws_launch_template.web.id
     version = "$Latest"
