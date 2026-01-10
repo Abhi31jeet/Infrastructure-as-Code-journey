@@ -122,5 +122,5 @@ resource "aws_autoscaling_group" "web" {
 module "monitoring" {
   source       = "./modules/monitoring"
   project_name = var.project_name
-  alert_email  = "jeetgulhane@example.com" 
+  alert_email  = "jeetgulhane@example.com"
 }

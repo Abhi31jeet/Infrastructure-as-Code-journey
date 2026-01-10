@@ -1,12 +1,6 @@
-variable "project_name" {
-  description = "Name of the project for resource naming"
-  type        = string
+variable "project_name" {}
+variable "as_group_name" {}
+variable "email_address" {}
+variable "region" {
+  default = "us-east-1"
 }
-
-variable "alert_email" {
-  description = "The email address to receive SNS notifications"
-  type        = string
-}
-
-variable "asg_name"     {
-} # Passed from networking module

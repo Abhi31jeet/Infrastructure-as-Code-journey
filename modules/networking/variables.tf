@@ -1,12 +1,8 @@
-variable "project_name" { 
-    type = string 
-}
-variable "vpc_cidr" { 
-    type = string 
-}
-
-variable "ami_id" {
-  description = "The AMI ID to use for the EC2 instances"
+variable "project_name" {}
+variable "vpc_cidr" {}
+variable "ami_id" {}
+variable "region" {
   type        = string
-  default     = "ami-0c101f26f147fa7fd" # Amazon Linux 2023 in us-east-1
+  description = "The AWS region where resources are deployed"
+  default     = "us-east-1"
 }
