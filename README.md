@@ -42,6 +42,33 @@ The culmination of the networking and security phases, moving from public-facing
 
 ## 📝 Progression Log
 
+### Week 5: Containerization & Cloud Deployment
+
+#### Overview
+This project demonstrates a full CI/CD lifecycle: packaging a custom web application into a Docker container, hosting it in a private cloud registry, and deploying it to an AWS EC2 instance.
+
+## Technical Stack
+* **Web Server:** Nginx (Alpine-based)
+* **Containerization:** Docker
+* **Registry:** Amazon Elastic Container Registry (ECR)
+* **Infrastructure:** AWS EC2 (t3.micro)
+* **Identity Management:** IAM Instance Profiles & Roles
+
+#### Architecture
+1. **Build:** A custom Docker image was built locally using a multi-stage-ready Dockerfile.
+2. **Push:** The image was tagged and pushed to a private AWS ECR repository.
+3. **Provision:** An EC2 instance was launched with a specific IAM Role to allow ECR access.
+4. **Deploy:** A User Data script automated the Docker installation and pulled the image on boot.
+
+#### How to Run Locally
+\`\`\`bash
+docker build -t sre-welcome:v1 .
+docker run -p 8080:80 sre-welcome:v1
+\`\`\`
+
+#### Live Deployment Proof
+![Success Screenshot](./website-success.png)
+
 ### **Week 4.2: Security & Hardening (Current)**
 - **SSM Session Manager:** Removed the need for SSH keys and closed Port 22 across the fleet.
 - **Secret Management:** Integrated AWS Secrets Manager for secure runtime variable injection.
