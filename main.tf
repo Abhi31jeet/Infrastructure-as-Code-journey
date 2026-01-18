@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+    region = var.aws_region
 }
 
 resource "aws_security_group" "docker_sg" {
@@ -45,19 +45,16 @@ resource "aws_iam_instance_profile" "ecr_profile" {
 }
 
 resource "aws_instance" "web_server" {
-  ami                    = "ami-0440d3b780d96b29d"
-  instance_type          = "t3.micro"
+  ami                    = var.ami_id
+  instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.docker_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ecr_profile.name
 
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y docker
-              systemctl start docker
-              aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 165286508924.dkr.ecr.us-east-1.amazonaws.com
-              docker run -d -p 80:80 165286508924.dkr.ecr.us-east-1.amazonaws.com/sre-journey-repo:v1
-              EOF
+  # This uses the templatefile function to pass variables into your shell script
+  user_data = templatefile("\${path.module}/scripts/install_docker.sh", {
+    aws_region = var.aws_region
+    account_id = var.account_id
+  })
 
   tags = {
     Name = "Terraform-Docker-Instance"
