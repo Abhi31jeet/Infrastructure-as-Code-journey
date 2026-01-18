@@ -51,7 +51,7 @@ resource "aws_instance" "web_server" {
   iam_instance_profile   = aws_iam_instance_profile.ecr_profile.name
 
   # This uses the templatefile function to pass variables into your shell script
-  user_data = templatefile("\${path.module}/scripts/install_docker.sh", {
+  user_data = templatefile("${path.module}/scripts/install_docker.sh", {
     aws_region = var.aws_region
     account_id = var.account_id
   })
