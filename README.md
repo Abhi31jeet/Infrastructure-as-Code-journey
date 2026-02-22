@@ -68,3 +68,28 @@ Infrastructure-as-Code-journey/
 │       └── install_docker.sh
 ├── terraform.tfvars         # Private values (GIT-IGNORED)
 └── .gitignore               # Protection for secrets & local state
+```
+
+## ⚙️ Deployment Workflow
+### Step 1: Bootstrap the Backend
+```
+Bash
+cd 01-bootstrap
+terraform init && terraform apply
+```
+### Step 2: Deploy the Application
+```
+Bash
+cd ../02-app
+terraform init -reconfigure
+terraform apply
+```
+
+## 🧠 SRE Skills Demonstrated
+- **Infrastructure as Code**: Advanced modularization, state locking, and remote backends.
+
+- **Security**: Zero-Ingress architecture, IAM Least Privilege, and Secrets management.
+
+- **Disaster Recovery**: State versioning and recovery procedures for locked infrastructure.
+
+- **Automation** : Bash bootstrapping and dynamic configuration through Terraform templates.
