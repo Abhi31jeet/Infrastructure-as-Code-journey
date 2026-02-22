@@ -1,4 +1,3 @@
-
 terraform {
   backend "s3" {
     # Replace with your actual bucket name from the previous step
@@ -11,6 +10,8 @@ terraform {
     encrypt        = true
   }
 }
+
+
 
 provider "aws" {
     region = var.aws_region
