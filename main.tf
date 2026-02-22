@@ -1,3 +1,17 @@
+
+terraform {
+  backend "s3" {
+    # Replace with your actual bucket name from the previous step
+    bucket         = "sre-journey-tf-state-165286508924" 
+    key            = "global/s3/terraform.tfstate"
+    region         = "us-east-1"
+
+    # Replace with your actual DynamoDB table name
+    dynamodb_table = "terraform-state-locking"
+    encrypt        = true
+  }
+}
+
 provider "aws" {
     region = var.aws_region
 }
